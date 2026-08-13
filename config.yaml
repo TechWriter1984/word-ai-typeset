@@ -1,0 +1,90 @@
+# =====================================================================
+#  Word AI 自动排版 + 模板合并 - 全局配置
+#  所有可调参数集中于此，方便用户一次性配置
+# =====================================================================
+
+# ---- 文件路径 ----
+paths:
+  # 样式模板（含 [SectionName: BodyText] 标记的官方模板）
+  template_docx: "C:\\Users\\PC\\xwechat_files\\SpecterLee_4a2c\\msg\\file\\2026-07\\raw_en_20260616.docx"
+  # 步骤2 输入：用户在前处理后保存的 docx（仅作默认值，实际由 main.py 命令行传入）
+  input_docx: "D:\\github_repos\\word-ai-typeset\\input\\待排版.docx"
+  # 输出目录（中间产物 + 最终合并文件）
+  output_dir: "D:\\github_repos\\word-ai-typeset\\output"
+  # API Key 文件
+  key_file: "D:\\github_repos\\word-ai-typeset\\key.txt"
+
+# ---- 模板正文节标记 ----
+template:
+  # 模板中标记正文节的关键字，与 [SectionName: BodyText] 中的 BodyText 一致
+  section_marker: "BodyText"
+  # 合并前是否清空正文节占位内容（与原 VBA 清空正文占位内容 一致）
+  clear_placeholder: true
+  # 语种模板名（按源文档语种自动选择，与原 VBA 一致）
+  cn_template: "raw_cn_20260616.docx"
+  en_template: "raw_en_20260616.docx"
+
+# ---- DeepSeek 大模型配置 ----
+llm:
+  base_url: "https://api.deepseek.com/v1"
+  model: "deepseek-chat"
+  temperature: 0.0
+  # 批量输出 JSON 标签所需 token 上限
+  max_tokens: 1024
+  timeout: 30
+  # 分类批大小（一次请求分类多少段落，节省 token）
+  batch_size: 20
+
+# ---- LLM 分类标签 → Word 自定义样式名 映射 ----
+# LLM 输出标签仅允许以下白名单：
+#   H1..H9, BODY, BULLET, NUM, TABLE_HEADER, TABLE_BODY, CODE, IMAGE, CAPTION
+# 样式名与模板 raw_en_20260616.docx 中的真实样式名严格一致
+# （通过 inspect_tpl.py 实测提取，python-docx 按样式 name 查找）
+# 段落样式 type=paragraph：
+#   heading 1~9 (内置标题，name 为英文小写)  -> H1~H9
+#   _全文正文格式_hs                          -> BODY
+#   _项目符号列表1级_圆点_hs                   -> BULLET
+#   _编号1_(1级)_hs                           -> NUM
+#   _表格_表头标题行_hs                        -> TABLE_HEADER
+#   _表格_正文格式_hs                          -> TABLE_BODY
+#   _代码字体_hs                              -> CODE
+#   _图_hs                                    -> IMAGE
+#   _图_题注_hs                               -> CAPTION
+style_map:
+  H1: "heading 1"
+  H2: "heading 2"
+  H3: "heading 3"
+  H4: "heading 4"
+  H5: "heading 5"
+  H6: "heading 6"
+  H7: "heading 7"
+  H8: "heading 8"
+  H9: "heading 9"
+  BODY: "_全文正文格式_hs"
+  BULLET: "_项目符号列表1级_圆点_hs"
+  NUM: "_编号1_(1级)_hs"
+  TABLE_HEADER: "_表格_表头标题行_hs"
+  TABLE_BODY: "_表格_正文格式_hs"
+  CODE: "_代码字体_hs"
+  IMAGE: "_图_hs"
+  CAPTION: "_图_题注_hs"
+
+# ---- 步骤2 排版行为 ----
+typeset:
+  # 段落文本最大长度（超过截断后送 LLM，避免超 token）
+  max_text_len: 500
+  # 跳过空段落与纯空白段落
+  skip_blank: true
+  # 命中失败（LLM 输出非白名单）时的兜底标签
+  fallback_label: "BODY"
+
+# ---- 增强排版开关（对齐 VBA 三宏）----
+features:
+  # 批量表格排版：1行1列当代码块；首行表头+灰底居中；其余行正文+左对齐；全部框线
+  format_tables: true
+  # 批量图片排版：尺寸>1.51cm×6.84cm 加边框+居中+_图_hs样式+下方题注
+  format_images: true
+  # 题注语种：true=中文"图 X-Y"，false=英文"Figure X-Y"
+  caption_chinese: true
+  # 清理标题多余编号：仅当标题已有自动编号(numPr)时，删除文本开头的手动编号
+  clean_heading_numbers: true

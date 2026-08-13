@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+
+# API Key / 密钥（必须排除）
+key.txt
+
+# 运行生成产物
+output/
+
+# 本地参考文件（VBA 代码 + 测试样本，不含在源码）
+vba.txt
+test_input.docx
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Git credential helper 缓存
+.creds
