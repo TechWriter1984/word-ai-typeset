@@ -1,8 +1,11 @@
-"""步骤2：LLM 分类 + 自动排版。
+﻿"""步骤2：LLM 分类 + 自动排版。
 
 输入：用户前处理后的 docx 路径
 行为：调用大模型对每段做样式分类，按 config.style_map 映射到
-      Word 自定义样式名并应用。
+      Word 自定义样式名并应用。最后可选执行清理标题编号。
+      （format_tables / format_images 统一移到 post_process 阶段，
+        因为 merge 之后才能知道哪些块属于 BodyText 节，避免误处理
+        封面 Logo / SymbolAndTerm 表 Icon。）
 输出：排版后的 docx（保存到 cfg.output_dir，文件名加后缀 _typeset）
 """
 from __future__ import annotations
@@ -18,15 +21,11 @@ from docx.text.paragraph import Paragraph
 
 from config import Config
 from llm import classify_paragraphs
-from typeset_extra import format_tables, format_images, clean_heading_numbers
+from typeset_extra import clean_heading_numbers
 
 
 def _import_styles_from_template(src_doc: Document, tpl_path: str, needed_names) -> int:
-    """从模板把 needed_names 里的样式定义复制到源 docx（已存在的不覆盖）。
-
-    等价 VBA 的 Application.OrganizerCopy。只复制 <w:style> 定义，
-    列表编号定义（numbering.xml）不复制——merge 到模板后由模板 numbering 接管。
-    """
+    """从模板把 needed_names 里的样式定义复制到源 docx（已存在的不覆盖）。"""
     if not os.path.exists(tpl_path):
         return 0
     tpl_doc = Document(tpl_path)
@@ -53,10 +52,7 @@ def _import_styles_from_template(src_doc: Document, tpl_path: str, needed_names)
 
 
 def _collect_paragraphs(doc: Document, skip_blank: bool, max_len: int) -> Tuple[List[str], List[int]]:
-    """收集需要分类的段落文本及其在 doc.paragraphs 中的下标。
-
-    注：仅遍历顶层段落，不含表格内段落（表格样式由后续合并步骤保留）。
-    """
+    """收集需要分类的段落文本及其在 doc.paragraphs 中的下标。"""
     items: List[str] = []
     indices: List[int] = []
     for idx, para in enumerate(doc.paragraphs):
@@ -76,7 +72,6 @@ def typeset_doc(cfg: Config, input_path: str) -> str:
 
     doc = Document(input_path)
 
-    # 从模板导入缺失的自定义样式定义（等价 VBA OrganizerCopy）
     needed = set(cfg.style_map.values())
     imported = _import_styles_from_template(doc, cfg.template_docx, needed)
     if imported:
@@ -94,7 +89,6 @@ def typeset_doc(cfg: Config, input_path: str) -> str:
     missing = set()
     applied = 0
 
-    # 先建一次「样式名 -> Styles 对象」缓存，避免每段重复查找
     style_cache = {}
     for name in set(style_map.values()):
         try:
@@ -118,26 +112,29 @@ def typeset_doc(cfg: Config, input_path: str) -> str:
         except Exception as e:
             missing.add(f"{target}({type(e).__name__})")
 
-    # ---- 增强排版（对齐 VBA 三宏）----
+    # ---- typeset 阶段增强：默认只做「清理标题编号」----
+    # 表格/图片排版留到 merge 后 post_process 执行（那时才能按 BodyText 节范围过滤）
     features = cfg.raw.get("features", {})
-    if features.get("format_tables", True):
-        t_stats = format_tables(doc)
-        print(f"[typeset] 表格排版: 总{t_stats['total']} 处理{t_stats['processed']} "
-              f"代码块{t_stats['code_block']} 跳过{t_stats['skipped']}")
-    if features.get("format_images", True):
-        is_cn = features.get("caption_chinese", True)
-        i_stats = format_images(doc, is_chinese=is_cn)
-        print(f"[typeset] 图片排版: 总{i_stats['total']} 处理{i_stats['processed']} 跳过{i_stats['skipped']}")
+    ts_cfg = cfg.raw.get("typeset", {})
+
     if features.get("clean_heading_numbers", True):
         c_stats = clean_heading_numbers(doc)
         print(f"[typeset] 清理标题编号: 清理{c_stats['cleaned']} 跳过{c_stats['skipped']} 非标题{c_stats['not_heading']}")
+
+    if ts_cfg.get("stage2_format_tables", False):
+        from typeset_extra import format_tables
+        t_stats = format_tables(doc, force_black_text=False)
+        print(f"[typeset] (stage2) 表格排版: 总{t_stats['total']} 处理{t_stats['processed']}")
+    if ts_cfg.get("stage2_format_images", False):
+        from typeset_extra import format_images
+        is_cn = features.get("caption_chinese", True)
+        i_stats = format_images(doc, is_chinese=is_cn)
+        print(f"[typeset] (stage2) 图片排版: 总{i_stats['total']} 处理{i_stats['processed']}")
 
     doc.save(out_path)
     print(f"[typeset] 完成 -> {out_path}  (应用 {applied}/{len(labels)} 段)")
     if missing:
         print(f"[typeset] 注意：以下标签/样式未命中：{sorted(missing)}")
-        # 诊断：列出源 docx 实际可用的目标样式名
-        from docx.oxml.ns import qn
         avail = []
         for s in doc.part.styles.element.findall(qn("w:style")):
             nm = s.find(qn("w:name"))

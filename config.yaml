@@ -1,4 +1,4 @@
-# =====================================================================
+﻿# =====================================================================
 #  Word AI 自动排版 + 模板合并 - 全局配置
 #  所有可调参数集中于此，方便用户一次性配置
 # =====================================================================
@@ -6,7 +6,7 @@
 # ---- 文件路径 ----
 paths:
   # 样式模板（含 [SectionName: BodyText] 标记的官方模板）
-  template_docx: "C:\\Users\\PC\\xwechat_files\\SpecterLee_4a2c\\msg\\file\\2026-07\\raw_en_20260616.docx"
+  template_docx: "D:\\github_repos\\word-ai-typeset\\raw_en_20260616.docx"
   # 步骤2 输入：用户在前处理后保存的 docx（仅作默认值，实际由 main.py 命令行传入）
   input_docx: "D:\\github_repos\\word-ai-typeset\\input\\待排版.docx"
   # 输出目录（中间产物 + 最终合并文件）
@@ -36,20 +36,6 @@ llm:
   batch_size: 20
 
 # ---- LLM 分类标签 → Word 自定义样式名 映射 ----
-# LLM 输出标签仅允许以下白名单：
-#   H1..H9, BODY, BULLET, NUM, TABLE_HEADER, TABLE_BODY, CODE, IMAGE, CAPTION
-# 样式名与模板 raw_en_20260616.docx 中的真实样式名严格一致
-# （通过 inspect_tpl.py 实测提取，python-docx 按样式 name 查找）
-# 段落样式 type=paragraph：
-#   heading 1~9 (内置标题，name 为英文小写)  -> H1~H9
-#   _全文正文格式_hs                          -> BODY
-#   _项目符号列表1级_圆点_hs                   -> BULLET
-#   _编号1_(1级)_hs                           -> NUM
-#   _表格_表头标题行_hs                        -> TABLE_HEADER
-#   _表格_正文格式_hs                          -> TABLE_BODY
-#   _代码字体_hs                              -> CODE
-#   _图_hs                                    -> IMAGE
-#   _图_题注_hs                               -> CAPTION
 style_map:
   H1: "heading 1"
   H2: "heading 2"
@@ -71,20 +57,34 @@ style_map:
 
 # ---- 步骤2 排版行为 ----
 typeset:
-  # 段落文本最大长度（超过截断后送 LLM，避免超 token）
   max_text_len: 500
-  # 跳过空段落与纯空白段落
   skip_blank: true
-  # 命中失败（LLM 输出非白名单）时的兜底标签
   fallback_label: "BODY"
+  # 步骤2阶段是否执行 format_tables/format_images（推荐 false，统一在 post_process 合并后执行，
+  # 此时才能知道哪些块属于 BodyText 节、哪些是封面/Symbol节，避免误处理Logo/Icon）
+  stage2_format_tables: false
+  stage2_format_images: false
 
-# ---- 增强排版开关（对齐 VBA 三宏）----
+# ---- 增强排版 + 后处理开关 ----
 features:
-  # 批量表格排版：1行1列当代码块；首行表头+灰底居中；其余行正文+左对齐；全部框线
+  # ===== 合并前（typeset 阶段）=====
+  # 清理标题多余编号：仅当标题已有自动编号(numPr)时，删除文本开头的手动编号
+  clean_heading_numbers: true
+
+  # ===== 合并后（post_process 阶段）=====
+  # 删除每一节的 [SectionName: XXX] 标记行（CoverPage/SymbolAndTerm/BodyText 等全部）
+  remove_all_section_markers: true
+  # 大模型分析正文后，替换模板遗留的 {{XXX}} 占位符（失败不中断，留空值）
+  replace_placeholders: true
+  # 更新术语表（"术语解释" 或 "EXPLANATION OF TERMS" 标题下表格）：
+  #   双语种搜索 BodyText 正文匹配术语 Acronym 列，未使用行删除，保留行字体变黑
+  update_terms_table: true
+  # 所有表格（包括术语表/SYMBOL表）单元格文字颜色强制设为黑色
+  blacken_tables: true
+
+  # 批量表格排版（合并后执行：仅 BodyText 节内表格，表头水平居中+重复标题行，内容中部左对齐；表头=灰底D1D1D1，全框线0.5pt，autofit）
   format_tables: true
-  # 批量图片排版：尺寸>1.51cm×6.84cm 加边框+居中+_图_hs样式+下方题注
+  # 批量图片排版（合并后执行：仅 BodyText 节范围内 + 尺寸>Logo×1.3 才处理，居中+边框+_图_hs+题注）
   format_images: true
   # 题注语种：true=中文"图 X-Y"，false=英文"Figure X-Y"
   caption_chinese: true
-  # 清理标题多余编号：仅当标题已有自动编号(numPr)时，删除文本开头的手动编号
-  clean_heading_numbers: true

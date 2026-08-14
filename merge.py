@@ -1,4 +1,4 @@
-"""步骤3：基于模板合并，替换 [SectionName: BodyText] 节内容。
+﻿"""步骤3：基于模板合并，替换 [SectionName: BodyText] 节内容。
 
 逻辑（与原 VBA 安全粘贴正文 等价）：
 1. 复制模板文件为输出文件（保留封面、页眉页脚、域、目录等）
@@ -6,17 +6,20 @@
 3. 清空标记之后、文档末尾分节符之前的所有占位内容
 4. 把排版后 docx 的正文（段落 + 表格，按顺序）追加到标记之后
 5. 段落/表格样式按"名称"重新映射到模板的对应样式
-   （避免两个 docx 的 styleId 不一致导致样式丢失）
+6. 复制源文档的图片/图表 parts，并重建 r:embed 引用
+   （否则 deepcopy 后图片会显示"无法显示该图片"）
 """
 from __future__ import annotations
 
 import copy
 import os
 import shutil
+import tempfile
 from typing import Optional
 
 from docx import Document
 from docx.oxml.ns import qn
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
 from config import Config
 
@@ -65,8 +68,71 @@ def _remap_paragraph_style(p_el, src_styles, tpl_styles) -> None:
     if tpl_id and tpl_id != src_id:
         pStyle.set(qn("w:val"), tpl_id)
     elif tpl_id is None:
-        # 模板没有同名样式：移除 pStyle 引用，回退到默认 Normal
         p_el.remove(pStyle)
+
+
+def _collect_src_rid_to_part(src_doc) -> dict:
+    """收集源 document.xml 所有 rel -> image/chart/ole part。"""
+    mapping = {}
+    for rid, rel in src_doc.part.rels.items():
+        rt = rel.reltype
+        if (rt == RT.IMAGE
+                or "/relationships/chart" in rt
+                or "/relationships/oleObject" in rt
+                or "/relationships/package" in rt):
+            try:
+                mapping[rid] = rel.target_part
+            except Exception:
+                pass
+    return mapping
+
+
+def _clone_image_part_to_tgt(src_part, tgt_doc_part) -> str:
+    """把 src_part 的 blob 复制到 tgt_doc_part，返回新 rId。
+
+    使用 python-docx 内置的 get_or_add_image_part 机制，
+    确保图片 part 正确注册到包中（Content_Types + rels），
+    并利用 SHA1 哈希自动去重——相同图片只存一份。
+    """
+    try:
+        blob = src_part.blob
+        ext = os.path.splitext(src_part.partname)[1].lower() or ".png"
+    except Exception:
+        return ""
+
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+            tmp.write(blob)
+            tmp_path = tmp.name
+        # get_or_add_image_part 内部用 SHA1 去重，
+        # 返回的 rId 可直接用于 r:embed
+        return tgt_doc_part.get_or_add_image_part(tmp_path)
+    except Exception:
+        return ""
+    finally:
+        if tmp_path:
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+
+
+def _rewrite_embeds_in_element(el, src_rid_to_part, tgt_doc_part, rid_cache: dict):
+    """递归 el 下所有 r:embed / r:link / r:id 属性，把 src rId 换成 tgt 新 rId。"""
+    for elem in el.iter():
+        for attr_name in list(elem.attrib.keys()):
+            if attr_name in (qn("r:embed"), qn("r:link"), qn("r:id")):
+                old_rid = elem.attrib[attr_name]
+                if old_rid in rid_cache:
+                    new_rid = rid_cache[old_rid]
+                elif old_rid in src_rid_to_part:
+                    new_rid = _clone_image_part_to_tgt(src_rid_to_part[old_rid], tgt_doc_part)
+                    rid_cache[old_rid] = new_rid
+                else:
+                    continue
+                if new_rid:
+                    elem.attrib[attr_name] = new_rid
 
 
 def merge_template(cfg: Config, src_docx: str, out_path: str) -> str:
@@ -80,7 +146,6 @@ def merge_template(cfg: Config, src_docx: str, out_path: str) -> str:
     out_dir = os.path.dirname(os.path.abspath(out_path)) or "."
     os.makedirs(out_dir, exist_ok=True)
 
-    # 1. 复制模板为输出文件（保留模板全部结构：封面、页眉页脚、域、目录等）
     shutil.copyfile(template_path, out_path)
 
     tpl_doc = Document(out_path)
@@ -93,11 +158,9 @@ def merge_template(cfg: Config, src_docx: str, out_path: str) -> str:
     body = tpl_doc.element.body
     sect_pr = body.find(qn("w:sectPr"))
 
-    # 2. 删除 marker 段本身 + 之后到 sectPr 之前的占位内容
-    #    （用户要求删除 [SectionName: BodyText] 这一行）
-    #    删除前先记录 marker 的前一个兄弟作插入锚点，保证源内容插到 BodyText 节原位置
-    prev_sibling = marker_p.getprevious()
-    to_remove = [marker_p]
+    # marker 段本身暂不删除，留到 post_process.remove_all_section_markers 阶段统一删
+    # （这样 post_process 才能用 marker 定位 BodyText 节的起始边界）
+    to_remove = []
     if cfg.clear_placeholder:
         started = False
         for child in list(body):
@@ -110,14 +173,18 @@ def merge_template(cfg: Config, src_docx: str, out_path: str) -> str:
             to_remove.append(child)
     for c in to_remove:
         body.remove(c)
-    print(f"[merge] 已删除 marker + 占位内容 {len(to_remove)} 个块")
+    print(f"[merge] 已删除占位内容 {len(to_remove)} 个块（BodyText marker 保留到后处理阶段再删）")
 
-    # 3. 把 src body 的段落/表格按顺序插入到 marker 原位置（prev_sibling 之后）
+    src_rid_to_part = _collect_src_rid_to_part(src_doc)
+    rid_cache = {}
+
     src_body = src_doc.element.body
     src_styles = src_doc.part.styles.element
     tpl_styles = tpl_doc.part.styles.element
 
-    anchor = prev_sibling  # 可能为 None（marker 原是第一个），此时插到 body 最前
+    # 插入位置：BodyText marker 之后（marker_p 与 sectPr 之间），
+    # 这样 post_process 可用 marker 定位 BodyText 节范围，只处理源内容。
+    anchor = marker_p
     inserted = 0
     for child in list(src_body):
         if child.tag == qn("w:sectPr"):
@@ -125,14 +192,19 @@ def merge_template(cfg: Config, src_docx: str, out_path: str) -> str:
         if child.tag not in (qn("w:p"), qn("w:tbl")):
             continue
         new_el = copy.deepcopy(child)
-        if anchor is None:
-            body.insert(0, new_el)
-        else:
-            anchor.addnext(new_el)
+
+        if src_rid_to_part:
+            _rewrite_embeds_in_element(new_el, src_rid_to_part, tpl_doc.part, rid_cache)
+
+        # addnext: 加到锚点之后；锚点递进，保证插入顺序与源文档一致
+        anchor.addnext(new_el)
         anchor = new_el
         inserted += 1
         if new_el.tag == qn("w:p"):
             _remap_paragraph_style(new_el, src_styles, tpl_styles)
+
+    if rid_cache:
+        print(f"[merge] 图片/资源 parts: 源 {len(src_rid_to_part)} 个，复制+重建 {len(rid_cache)} 条引用")
 
     tpl_doc.save(out_path)
     print(f"[merge] 完成 -> {out_path}  (插入 {inserted} 个块)")
