@@ -55,7 +55,10 @@ def _style_id_by_name(styles_element, name: str) -> Optional[str]:
 
 def _remap_paragraph_style(p_el, src_styles, tpl_styles) -> None:
     """把段落的 pStyle w:val 从 src 的 styleId 改写为 tpl 的 styleId（按名称匹配）。"""
-    pStyle = p_el.find(qn("w:pStyle"))
+    pPr = p_el.find(qn("w:pPr"))
+    if pPr is None:
+        return
+    pStyle = pPr.find(qn("w:pStyle"))
     if pStyle is None:
         return
     src_id = pStyle.get(qn("w:val"))
@@ -68,7 +71,7 @@ def _remap_paragraph_style(p_el, src_styles, tpl_styles) -> None:
     if tpl_id and tpl_id != src_id:
         pStyle.set(qn("w:val"), tpl_id)
     elif tpl_id is None:
-        p_el.remove(pStyle)
+        pPr.remove(pStyle)
 
 
 def _collect_src_rid_to_part(src_doc) -> dict:
