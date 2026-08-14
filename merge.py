@@ -1,4 +1,4 @@
-﻿"""步骤3：基于模板合并，替换 [SectionName: BodyText] 节内容。
+"""步骤3：基于模板合并，替换 [SectionName: BodyText] 节内容。
 
 逻辑（与原 VBA 安全粘贴正文 等价）：
 1. 复制模板文件为输出文件（保留封面、页眉页脚、域、目录等）
@@ -93,7 +93,7 @@ def _collect_src_rid_to_part(src_doc) -> dict:
 def _clone_image_part_to_tgt(src_part, tgt_doc_part) -> str:
     """把 src_part 的 blob 复制到 tgt_doc_part，返回新 rId。
 
-    使用 python-docx 内置的 get_or_add_image_part 机制，
+    使用 python-docx 内置的 get_or_add_image 机制，
     确保图片 part 正确注册到包中（Content_Types + rels），
     并利用 SHA1 哈希自动去重——相同图片只存一份。
     """
@@ -108,9 +108,10 @@ def _clone_image_part_to_tgt(src_part, tgt_doc_part) -> str:
         with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
             tmp.write(blob)
             tmp_path = tmp.name
-        # get_or_add_image_part 内部用 SHA1 去重，
+        # get_or_add_image 内部用 SHA1 去重，
         # 返回的 rId 可直接用于 r:embed
-        return tgt_doc_part.get_or_add_image_part(tmp_path)
+        rId, _ = tgt_doc_part.get_or_add_image(tmp_path)
+        return rId
     except Exception:
         return ""
     finally:
