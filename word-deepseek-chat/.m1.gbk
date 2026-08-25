@@ -71,7 +71,7 @@ Public Function GetDocumentStyles() As String
     Dim k As Variant, sb As String
     sb = "文档中正在使用的段落样式（共 " & dict.Count & " 种）：" & vbCrLf
     For Each k In dict.Keys
-        sb = sb & "  - " & k & "  (" & dict(k) & " 段)" & vbCrLf
+        sb = sb & "   " & k & "  (" & dict(k) & " 段)" & vbCrLf
     Next k
     GetDocumentStyles = sb
 End Function
