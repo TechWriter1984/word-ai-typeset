@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmChat 
-   Caption         =   "DeepSeek-V4-Pro ∂‘ª∞÷˙ ÷"
+   Caption         =   "DeepSeek-V4-Pro ÂØπËØùÂä©Êâã"
    ClientHeight    =   6000
    ClientLeft      =   120
    ClientTop       =   465
@@ -27,7 +27,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmChat
       Width           =   8760
    End
    Begin {8BD21D10-EC42-11CE-9E0D-00AA006002F3} chkThinking 
-      Caption         =   "…Ó∂»Àºøº"
+      Caption         =   "Ê∑±Â∫¶ÊÄùËÄÉ"
       Height          =   240
       Left            =   4560
       TabIndex        =   2
@@ -36,7 +36,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmChat
       Width           =   1500
    End
    Begin {978C9E23-D4B0-11CE-BF2D-00AA003F40D0} lblStatus 
-      Caption         =   "æÕ–˜"
+      Caption         =   "Â∞±Áª™"
       Height          =   240
       Left            =   120
       TabIndex        =   1
@@ -44,7 +44,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmChat
       Width           =   4200
    End
    Begin {D7053240-CE69-11CD-A777-00DD01143C57} cmdSend 
-      Caption         =   "∑¢ÀÕ"
+      Caption         =   "ÂèëÈÄÅ"
       Default         =   -1  'True
       Height          =   360
       Left            =   7560
@@ -53,7 +53,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmChat
       Width           =   1320
    End
    Begin {D7053240-CE69-11CD-A777-00DD01143C57} cmdClear 
-      Caption         =   "«Âø’∂‘ª∞"
+      Caption         =   "Ê∏ÖÁ©∫ÂØπËØù"
       Height          =   360
       Left            =   4980
       TabIndex        =   8
@@ -61,7 +61,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmChat
       Width           =   1380
    End
    Begin {D7053240-CE69-11CD-A777-00DD01143C57} cmdLoadComments 
-      Caption         =   "∂¡»°∆¿¬€"
+      Caption         =   "ËØªÂèñËØÑËÆ∫"
       Height          =   360
       Left            =   3360
       TabIndex        =   7
@@ -69,7 +69,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmChat
       Width           =   1500
    End
    Begin {D7053240-CE69-11CD-A777-00DD01143C57} cmdLoadStyles 
-      Caption         =   "∂¡»°—˘ Ω"
+      Caption         =   "ËØªÂèñÊ†∑Âºè"
       Height          =   360
       Left            =   1740
       TabIndex        =   6
@@ -77,7 +77,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmChat
       Width           =   1500
    End
    Begin {D7053240-CE69-11CD-A777-00DD01143C57} cmdLoadDoc 
-      Caption         =   "∂¡»°Œƒµµ"
+      Caption         =   "ËØªÂèñÊñáÊ°£"
       Height          =   360
       Left            =   120
       TabIndex        =   5
@@ -92,41 +92,41 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
-' ∂‘ª∞¿˙ ∑£®Ωˆ¥Ê user/assistant œ˚œ¢£¨system œ˚œ¢√ø¥Œ∑¢ÀÕ ± µ ±∆¥Ω”£©
+' ÂØπËØùÂéÜÂè≤Ôºà‰ªÖÂ≠ò user/assistant Ê∂àÊÅØÔºåsystem Ê∂àÊÅØÊØèÊ¨°ÂèëÈÄÅÊó∂ÂÆûÊó∂ÊãºÊé•Ôºâ
 Private mHistory As Collection
 
 Private Sub UserForm_Initialize()
     Set mHistory = New Collection
     chkThinking.Value = True
-    txtChat.Text = "ƒ„∫√£°Œ“ « DeepSeek-V4-Pro°£" & vbCrLf & _
-        "ø…“‘µ„ª˜œ¬∑Ω°æ∂¡»°Œƒµµ / ∂¡»°—˘ Ω / ∂¡»°∆¿¬€°ø∞—µ±«∞ Word Œƒµµµƒ–≈œ¢◊˜Œ™…œœ¬Œƒ£¨" & vbCrLf & _
-        "»ª∫Û÷±Ω”‘⁄œ¬∑Ω ‰»ÎŒ Ã‚≤¢ªÿ≥µ∑¢ÀÕ°£" & vbCrLf & _
+    txtChat.Text = "‰Ω†Â•ΩÔºÅÊàëÊòØ DeepSeek-V4-Pro„ÄÇ" & vbCrLf & _
+        "ÂèØ‰ª•ÁÇπÂáª‰∏ãÊñπ„ÄêËØªÂèñÊñáÊ°£ / ËØªÂèñÊ†∑Âºè / ËØªÂèñËØÑËÆ∫„ÄëÊääÂΩìÂâç Word ÊñáÊ°£ÁöÑ‰ø°ÊÅØ‰Ωú‰∏∫‰∏ä‰∏ãÊñáÔºå" & vbCrLf & _
+        "ÁÑ∂ÂêéÁõ¥Êé•Âú®‰∏ãÊñπËæìÂÖ•ÈóÆÈ¢òÂπ∂ÂõûËΩ¶ÂèëÈÄÅ„ÄÇ" & vbCrLf & _
         String(60, "-") & vbCrLf
-    lblStatus.Caption = "æÕ–˜"
+    lblStatus.Caption = "Â∞±Áª™"
 End Sub
 
 Private Sub cmdSend_Click()
     Dim q As String
     q = Trim(txtInput.Text)
     If Len(q) = 0 Then
-        MsgBox "«Î ‰»Î“™∑¢ÀÕµƒƒ⁄»›°£", vbExclamation, "Ã· æ"
+        MsgBox "ËØ∑ËæìÂÖ•Ë¶ÅÂèëÈÄÅÁöÑÂÜÖÂÆπ„ÄÇ", vbExclamation, "ÊèêÁ§∫"
         txtInput.SetFocus
         Exit Sub
     End If
 
-    ' º«¬º≤¢œ‘ æ”√ªßœ˚œ¢
+    ' ËÆ∞ÂΩïÂπ∂ÊòæÁ§∫Áî®Êà∑Ê∂àÊÅØ
     mHistory.Add BuildRoleMsg("user", q)
-    AppendChat "Œ“", q
+    AppendChat "Êàë", q
     txtInput.Text = ""
 
     SendAndShow
 End Sub
 
 Private Sub SendAndShow()
-    lblStatus.Caption = "’˝‘⁄«Î«Û DeepSeek-V4-Pro °≠"
+    lblStatus.Caption = "Ê≠£Âú®ËØ∑Ê±Ç DeepSeek-V4-Pro ‚Ä¶"
     DoEvents
 
-    ' ◊È◊∞ÕÍ’˚ messages  ˝◊È£∫system + ¿˙ ∑
+    ' ÁªÑË£ÖÂÆåÊï¥ messages Êï∞ÁªÑÔºösystem + ÂéÜÂè≤
     Dim msgs As String, i As Long
     msgs = "["
     msgs = msgs & BuildRoleMsg("system", GetSystemPrompt())
@@ -140,56 +140,56 @@ Private Sub SendAndShow()
     ok = CallDeepSeek(msgs, CBool(chkThinking.Value), reply, reasoning)
 
     If Not ok Then
-        AppendChat "÷˙ ÷", "(«Î«Û ß∞‹) " & reply
-        lblStatus.Caption = "«Î«Û ß∞‹"
+        AppendChat "Âä©Êâã", "(ËØ∑Ê±ÇÂ§±Ë¥•) " & reply
+        lblStatus.Caption = "ËØ∑Ê±ÇÂ§±Ë¥•"
         Exit Sub
     End If
 
-    ' º«¬º÷˙ ÷œ˚œ¢£®÷ªº«◊Ó÷’ªÿ¥£¨ÀºŒ¨¡¥Ωˆ’π æ≤ª≤Œ”Î∫Û–¯£©
+    ' ËÆ∞ÂΩïÂä©ÊâãÊ∂àÊÅØÔºàÂè™ËÆ∞ÊúÄÁªàÂõûÁ≠îÔºåÊÄùÁª¥Èìæ‰ªÖÂ±ïÁ§∫‰∏çÂèÇ‰∏éÂêéÁª≠Ôºâ
     mHistory.Add BuildRoleMsg("assistant", reply)
 
     If Len(reasoning) > 0 Then
-        AppendChat "…Ó∂»Àºøº", reasoning
+        AppendChat "Ê∑±Â∫¶ÊÄùËÄÉ", reasoning
     End If
-    AppendChat "÷˙ ÷", reply
-    lblStatus.Caption = "æÕ–˜"
+    AppendChat "Âä©Êâã", reply
+    lblStatus.Caption = "Â∞±Áª™"
 End Sub
 
 Private Sub cmdLoadDoc_Click()
     Dim t As String
     t = GetDocumentText()
-    mHistory.Add BuildRoleMsg("user", "“‘œ¬ «µ±«∞ Word Œƒµµµƒ’˝Œƒƒ⁄»›£¨«Îæ›¥Àªÿ¥∫Û–¯Œ Ã‚£∫" & vbCrLf & t)
-    AppendChat "œµÕ≥", "“—∂¡»°Œƒµµ’˝Œƒ£®π≤ " & Len(t) & " ◊÷∑˚£©£¨◊˜Œ™…œœ¬Œƒ°£"
+    mHistory.Add BuildRoleMsg("user", "‰ª•‰∏ãÊòØÂΩìÂâç Word ÊñáÊ°£ÁöÑÊ≠£ÊñáÂÜÖÂÆπÔºåËØ∑ÊçÆÊ≠§ÂõûÁ≠îÂêéÁª≠ÈóÆÈ¢òÔºö" & vbCrLf & t)
+    AppendChat "Á≥ªÁªü", "Â∑≤ËØªÂèñÊñáÊ°£Ê≠£ÊñáÔºàÂÖ± " & Len(t) & " Â≠óÁ¨¶ÔºâÔºå‰Ωú‰∏∫‰∏ä‰∏ãÊñá„ÄÇ"
     txtInput.SetFocus
 End Sub
 
 Private Sub cmdLoadStyles_Click()
     Dim t As String
     t = GetDocumentStyles()
-    mHistory.Add BuildRoleMsg("user", "“‘œ¬ «µ±«∞ Word Œƒµµ’˝‘⁄ π”√µƒ∂Œ¬‰—˘ Ω£∫" & vbCrLf & t)
-    AppendChat "œµÕ≥", "“—∂¡»°Œƒµµ—˘ Ω–≈œ¢£¨◊˜Œ™…œœ¬Œƒ°£"
+    mHistory.Add BuildRoleMsg("user", "‰ª•‰∏ãÊòØÂΩìÂâç Word ÊñáÊ°£Ê≠£Âú®‰ΩøÁî®ÁöÑÊÆµËêΩÊ†∑ÂºèÔºö" & vbCrLf & t)
+    AppendChat "Á≥ªÁªü", "Â∑≤ËØªÂèñÊñáÊ°£Ê†∑Âºè‰ø°ÊÅØÔºå‰Ωú‰∏∫‰∏ä‰∏ãÊñá„ÄÇ"
     txtInput.SetFocus
 End Sub
 
 Private Sub cmdLoadComments_Click()
     Dim t As String
     t = GetDocumentComments()
-    mHistory.Add BuildRoleMsg("user", "“‘œ¬ «µ±«∞ Word Œƒµµµƒ∆¿¬€–≈œ¢£∫" & vbCrLf & t)
-    AppendChat "œµÕ≥", "“—∂¡»°Œƒµµ∆¿¬€–≈œ¢£¨◊˜Œ™…œœ¬Œƒ°£"
+    mHistory.Add BuildRoleMsg("user", "‰ª•‰∏ãÊòØÂΩìÂâç Word ÊñáÊ°£ÁöÑËØÑËÆ∫‰ø°ÊÅØÔºö" & vbCrLf & t)
+    AppendChat "Á≥ªÁªü", "Â∑≤ËØªÂèñÊñáÊ°£ËØÑËÆ∫‰ø°ÊÅØÔºå‰Ωú‰∏∫‰∏ä‰∏ãÊñá„ÄÇ"
     txtInput.SetFocus
 End Sub
 
 Private Sub cmdClear_Click()
     Set mHistory = New Collection
     txtChat.Text = ""
-    AppendChat "œµÕ≥", "∂‘ª∞“—«Âø’£¨ø…÷ÿ–¬ø™ º°£"
+    AppendChat "Á≥ªÁªü", "ÂØπËØùÂ∑≤Ê∏ÖÁ©∫ÔºåÂèØÈáçÊñ∞ÂºÄÂßã„ÄÇ"
 End Sub
 
 Private Sub AppendChat(ByVal who As String, ByVal text As String)
-    ' ∑¿÷πŒƒ±æøÚ“Á≥ˆ£¨≥¨≥§ ±≤√µÙø™Õ∑
+    ' Èò≤Ê≠¢ÊñáÊú¨Ê°ÜÊ∫¢Âá∫ÔºåË∂ÖÈïøÊó∂Ë£ÅÊéâÂºÄÂ§¥
     If Len(txtChat.Text) > 30000 Then
         txtChat.Text = Right(txtChat.Text, 20000)
     End If
-    txtChat.Text = txtChat.Text & "°æ" & who & "°ø" & vbCrLf & text & vbCrLf & String(60, "-") & vbCrLf
+    txtChat.Text = txtChat.Text & "„Äê" & who & "„Äë" & vbCrLf & text & vbCrLf & String(60, "-") & vbCrLf
     txtChat.SelStart = Len(txtChat.Text)
 End Sub

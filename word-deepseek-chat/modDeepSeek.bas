@@ -2,57 +2,57 @@ Attribute VB_Name = "modDeepSeek"
 Option Explicit
 
 '============================================================
-' DeepSeek-V4-Pro ¶Ô»°ÖúÊÖ ¡ª¡ª ¹«¹²Ä£¿é
+' DeepSeek-V4-Pro å¯¹è¯åŠ©æ‰‹ â€”â€” å…¬å…±æ¨¡å—
 '
-' ¹¦ÄÜ£º
-'   1. µ÷ÓÃ DeepSeek API£¨Ä£ĞÍ deepseek-v4-pro£¬OpenAI ¼æÈİ½Ó¿Ú£©
-'   2. ¶ÁÈ¡µ±Ç° Word ÎÄµµµÄÕıÎÄ / ÑùÊ½ / ÆÀÂÛ
-'   3. Ìá¹© ShowChatDialog Èë¿Ú£¬µ¯³ö¶Ô»°´°Ìå frmChat
+' åŠŸèƒ½ï¼š
+'   1. è°ƒç”¨ DeepSeek APIï¼ˆæ¨¡å‹ deepseek-v4-proï¼ŒOpenAI å…¼å®¹æ¥å£ï¼‰
+'   2. è¯»å–å½“å‰ Word æ–‡æ¡£çš„æ­£æ–‡ / æ ·å¼ / è¯„è®º
+'   3. æä¾› ShowChatDialog å…¥å£ï¼Œå¼¹å‡ºå¯¹è¯çª—ä½“ frmChat
 '
-' µ¼Èë·½·¨£¨VBA ±à¼­Æ÷ Alt+F11£©£º
-'   ÎÄ¼ş -> µ¼ÈëÎÄ¼ş -> Ñ¡Ôñ modDeepSeek.bas ºÍ frmChat.frm
-'   È»ºóÔÚ¡¾ºê¡¿ÀïÔËĞĞ ShowChatDialog£¬»ò°ÑËü¼Óµ½¿ìËÙ·ÃÎÊ¹¤¾ßÀ¸/
-'   ×Ô¶¨Òå¿ì½İ¼üÉÏ£¬¼´¿ÉÔÚ Word ½çÃæÒ»¼ü´ò¿ª¶Ô»°¿ò¡£
+' å¯¼å…¥æ–¹æ³•ï¼ˆVBA ç¼–è¾‘å™¨ Alt+F11ï¼‰ï¼š
+'   æ–‡ä»¶ -> å¯¼å…¥æ–‡ä»¶ -> é€‰æ‹© modDeepSeek.bas å’Œ frmChat.frm
+'   ç„¶ååœ¨ã€å®ã€‘é‡Œè¿è¡Œ ShowChatDialogï¼Œæˆ–æŠŠå®ƒåŠ åˆ°å¿«é€Ÿè®¿é—®å·¥å…·æ /
+'   è‡ªå®šä¹‰å¿«æ·é”®ä¸Šï¼Œå³å¯åœ¨ Word ç•Œé¢ä¸€é”®æ‰“å¼€å¯¹è¯æ¡†ã€‚
 '============================================================
 
-'---------------- ÅäÖÃÇø£¨°´ĞèĞŞ¸Ä£©----------------
-' DeepSeek API Key£ºÔÚ https://platform.deepseek.com ÉêÇë£¬sk- ¿ªÍ·
+'---------------- é…ç½®åŒºï¼ˆæŒ‰éœ€ä¿®æ”¹ï¼‰----------------
+' DeepSeek API Keyï¼šåœ¨ https://platform.deepseek.com ç”³è¯·ï¼Œsk- å¼€å¤´
 Private Const DEEPSEEK_API_KEY As String = "sk-REPLACE_ME"
 
-' Èô²»Ïë°Ñ Key Ğ´ËÀÔÚÕâÀï£¬¿ÉÒÔÁô sk-REPLACE_ME£¬È»ºóĞÂ½¨ÎÄ¼ş
-' %APPDATA%\deepseek_key.txt£¨Ê×ĞĞĞ´ sk-xxx£©£¬³ÌĞò»á×Ô¶¯¶ÁÈ¡£¨¼û GetApiKey£©
+' è‹¥ä¸æƒ³æŠŠ Key å†™æ­»åœ¨è¿™é‡Œï¼Œå¯ä»¥ç•™ sk-REPLACE_MEï¼Œç„¶åæ–°å»ºæ–‡ä»¶
+' %APPDATA%\deepseek_key.txtï¼ˆé¦–è¡Œå†™ sk-xxxï¼‰ï¼Œç¨‹åºä¼šè‡ªåŠ¨è¯»å–ï¼ˆè§ GetApiKeyï¼‰
 
-' DeepSeek API µØÖ·£¨OpenAI ¼æÈİ£¬²»±Ø¼Ó /v1£©
+' DeepSeek API åœ°å€ï¼ˆOpenAI å…¼å®¹ï¼Œä¸å¿…åŠ  /v1ï¼‰
 Private Const DEEPSEEK_URL As String = "https://api.deepseek.com/chat/completions"
 
-' Ä£ĞÍÃû£ºDeepSeek-V4-Pro ÕıÊ½°æ£¨2026-08-13 ÉÏÏßµÄ×îĞÂ°æ±¾£©
+' æ¨¡å‹åï¼šDeepSeek-V4-Pro æ­£å¼ç‰ˆï¼ˆ2026-08-13 ä¸Šçº¿çš„æœ€æ–°ç‰ˆæœ¬ï¼‰
 Private Const DEEPSEEK_MODEL As String = "deepseek-v4-pro"
 
-' µ¥´Î»Ø´ğ×î´óÊä³ö token Êı
+' å•æ¬¡å›ç­”æœ€å¤§è¾“å‡º token æ•°
 Private Const DEEPSEEK_MAX_TOKENS As Long = 8192
 
-' ÏµÍ³ÌáÊ¾´Ê
+' ç³»ç»Ÿæç¤ºè¯
 Private Const SYSTEM_PROMPT As String = _
-    "ÄãÊÇÇ¶ÈëÔÚ Microsoft Word ÖĞµÄÎÄµµÖúÊÖ¡£Äã»áÊÕµ½À´×Ôµ±Ç° Word ÎÄµµµÄÕıÎÄ¡¢ÑùÊ½ºÍÆÀÂÛĞÅÏ¢£¬" & _
-    "Çë»ùÓÚÕâĞ©ĞÅÏ¢»Ø´ğÓÃ»§¹ØÓÚÎÄµµµÄÎÊÌâ£¨×Ü½á¡¢·­Òë¡¢¸ÄĞ´¡¢Ğ£¶Ô¡¢ÕÒÎÊÌâµÈ£©¡£" & _
-    "»Ø´ğÊ¹ÓÃ¼ò½à¡¢×¨Òµ¡¢×¼È·µÄÖĞÎÄ£»³ı·ÇÓÃ»§Ã÷È·ÒªÇó£¬·ñÔò²»ÒªÊä³öÓëÎÄµµÎŞ¹ØµÄÄÚÈİ¡£"
+    "ä½ æ˜¯åµŒå…¥åœ¨ Microsoft Word ä¸­çš„æ–‡æ¡£åŠ©æ‰‹ã€‚ä½ ä¼šæ”¶åˆ°æ¥è‡ªå½“å‰ Word æ–‡æ¡£çš„æ­£æ–‡ã€æ ·å¼å’Œè¯„è®ºä¿¡æ¯ï¼Œ" & _
+    "è¯·åŸºäºè¿™äº›ä¿¡æ¯å›ç­”ç”¨æˆ·å…³äºæ–‡æ¡£çš„é—®é¢˜ï¼ˆæ€»ç»“ã€ç¿»è¯‘ã€æ”¹å†™ã€æ ¡å¯¹ã€æ‰¾é—®é¢˜ç­‰ï¼‰ã€‚" & _
+    "å›ç­”ä½¿ç”¨ç®€æ´ã€ä¸“ä¸šã€å‡†ç¡®çš„ä¸­æ–‡ï¼›é™¤éç”¨æˆ·æ˜ç¡®è¦æ±‚ï¼Œå¦åˆ™ä¸è¦è¾“å‡ºä¸æ–‡æ¡£æ— å…³çš„å†…å®¹ã€‚"
 
-' ¶ÁÈ¡ÎÄµµÊ±ÕıÎÄÎÄ±¾µÄ×î´ó³¤¶È£¨±ÜÃâ³¬³öÉÏÏÂÎÄ£©
+' è¯»å–æ–‡æ¡£æ—¶æ­£æ–‡æ–‡æœ¬çš„æœ€å¤§é•¿åº¦ï¼ˆé¿å…è¶…å‡ºä¸Šä¸‹æ–‡ï¼‰
 Private Const MAX_DOC_TEXT As Long = 50000
 '============================================================
 
 
-'================= Èë¿Ú =================
+'================= å…¥å£ =================
 Public Sub ShowChatDialog()
-    ' ÒÔ·ÇÄ£Ì¬·½Ê½´ò¿ª£¬±ãÓÚÓÃ»§ÔÚ¶Ô»°µÄÍ¬Ê±·­ÔÄ/±à¼­ÎÄµµ
+    ' ä»¥éæ¨¡æ€æ–¹å¼æ‰“å¼€ï¼Œä¾¿äºç”¨æˆ·åœ¨å¯¹è¯çš„åŒæ—¶ç¿»é˜…/ç¼–è¾‘æ–‡æ¡£
     frmChat.Show vbModeless
 End Sub
 
 
-'================= ¶ÔÍâ£º¶ÁÈ¡ÎÄµµĞÅÏ¢ =================
+'================= å¯¹å¤–ï¼šè¯»å–æ–‡æ¡£ä¿¡æ¯ =================
 
 Public Function GetDocumentStyles() As String
-    ' »ã×Üµ±Ç°ÎÄµµÖĞÕıÔÚÊ¹ÓÃµÄ¶ÎÂäÑùÊ½£¨º¬³öÏÖ´ÎÊı£©
+    ' æ±‡æ€»å½“å‰æ–‡æ¡£ä¸­æ­£åœ¨ä½¿ç”¨çš„æ®µè½æ ·å¼ï¼ˆå«å‡ºç°æ¬¡æ•°ï¼‰
     On Error Resume Next
     Dim p As Paragraph
     Dim dict As Object
@@ -60,7 +60,7 @@ Public Function GetDocumentStyles() As String
     Dim sn As String
     For Each p In ActiveDocument.Paragraphs
         sn = p.Style.NameLocal
-        If Len(sn) = 0 Then sn = "(Î´ÃüÃû)"
+        If Len(sn) = 0 Then sn = "(æœªå‘½å)"
         If dict.Exists(sn) Then
             dict(sn) = CLng(dict(sn)) + 1
         Else
@@ -69,36 +69,36 @@ Public Function GetDocumentStyles() As String
     Next p
 
     Dim k As Variant, sb As String
-    sb = "ÎÄµµÖĞÕıÔÚÊ¹ÓÃµÄ¶ÎÂäÑùÊ½£¨¹² " & dict.Count & " ÖÖ£©£º" & vbCrLf
+    sb = "æ–‡æ¡£ä¸­æ­£åœ¨ä½¿ç”¨çš„æ®µè½æ ·å¼ï¼ˆå…± " & dict.Count & " ç§ï¼‰ï¼š" & vbCrLf
     For Each k In dict.Keys
-        sb = sb & "  - " & k & "  (" & dict(k) & " ¶Î)" & vbCrLf
+        sb = sb & "  - " & k & "  (" & dict(k) & " æ®µ)" & vbCrLf
     Next k
     GetDocumentStyles = sb
 End Function
 
 Public Function GetDocumentComments() As String
-    ' ¶ÁÈ¡ÎÄµµËùÓĞÅú×¢£º×÷Õß¡¢Ê±¼ä¡¢Åú×¢ÄÚÈİ¡¢±»Åú×¢µÄÎÄ±¾
+    ' è¯»å–æ–‡æ¡£æ‰€æœ‰æ‰¹æ³¨ï¼šä½œè€…ã€æ—¶é—´ã€æ‰¹æ³¨å†…å®¹ã€è¢«æ‰¹æ³¨çš„æ–‡æœ¬
     On Error Resume Next
     If ActiveDocument.Comments.Count = 0 Then
-        GetDocumentComments = "£¨µ±Ç°ÎÄµµÃ»ÓĞÆÀÂÛ/Åú×¢£©"
+        GetDocumentComments = "ï¼ˆå½“å‰æ–‡æ¡£æ²¡æœ‰è¯„è®º/æ‰¹æ³¨ï¼‰"
         Exit Function
     End If
 
     Dim c As Comment
     Dim sb As String
-    sb = "ÎÄµµÆÀÂÛ£¨¹² " & ActiveDocument.Comments.Count & " Ìõ£©£º" & vbCrLf
+    sb = "æ–‡æ¡£è¯„è®ºï¼ˆå…± " & ActiveDocument.Comments.Count & " æ¡ï¼‰ï¼š" & vbCrLf
     For Each c In ActiveDocument.Comments
-        sb = sb & "[" & c.Index & "] ×÷Õß: " & c.Author & vbCrLf
-        sb = sb & "    ÆÀÂÛÄÚÈİ: " & Trim(c.Range.Text) & vbCrLf
+        sb = sb & "[" & c.Index & "] ä½œè€…: " & c.Author & vbCrLf
+        sb = sb & "    è¯„è®ºå†…å®¹: " & Trim(c.Range.Text) & vbCrLf
         On Error Resume Next
-        sb = sb & "    ±»ÆÀÂÛÎÄ±¾: " & Trim(c.Scope.Text) & vbCrLf
+        sb = sb & "    è¢«è¯„è®ºæ–‡æœ¬: " & Trim(c.Scope.Text) & vbCrLf
         sb = sb & vbCrLf
     Next c
     GetDocumentComments = sb
 End Function
 
 Public Function GetDocumentText() As String
-    ' ¶ÁÈ¡ÕıÎÄ£¨¶ÎÂä + ±í¸ñ£©£¬²¢ÓÃ[ÑùÊ½]±ê×¢±êÌâµÈ½á¹¹
+    ' è¯»å–æ­£æ–‡ï¼ˆæ®µè½ + è¡¨æ ¼ï¼‰ï¼Œå¹¶ç”¨[æ ·å¼]æ ‡æ³¨æ ‡é¢˜ç­‰ç»“æ„
     On Error Resume Next
     Dim sb As String
     Dim p As Paragraph
@@ -111,10 +111,10 @@ Public Function GetDocumentText() As String
         End If
     Next p
 
-    ' ±í¸ñÄÚÈİµ¥¶À±ê×¢
+    ' è¡¨æ ¼å†…å®¹å•ç‹¬æ ‡æ³¨
     Dim tbl As Table, r As Row, cell As Cell
     For Each tbl In ActiveDocument.Tables
-        sb = sb & "[±í¸ñ]" & vbCrLf
+        sb = sb & "[è¡¨æ ¼]" & vbCrLf
         For Each r In tbl.Rows
             Dim rowText As String
             rowText = ""
@@ -123,20 +123,20 @@ Public Function GetDocumentText() As String
             Next cell
             sb = sb & "  " & Trim(rowText) & vbCrLf
         Next r
-        sb = sb & "[/±í¸ñ]" & vbCrLf
+        sb = sb & "[/è¡¨æ ¼]" & vbCrLf
     Next tbl
 
     If Len(sb) > MAX_DOC_TEXT Then
-        sb = Left(sb, MAX_DOC_TEXT) & vbCrLf & "¡­£¨ÕıÎÄ¹ı³¤£¬ÒÑ½Ø¶Ï£©"
+        sb = Left(sb, MAX_DOC_TEXT) & vbCrLf & "â€¦ï¼ˆæ­£æ–‡è¿‡é•¿ï¼Œå·²æˆªæ–­ï¼‰"
     End If
     GetDocumentText = sb
 End Function
 
 
-'================= ¶ÔÍâ£ºµ÷ÓÃÄ£ĞÍ =================
+'================= å¯¹å¤–ï¼šè°ƒç”¨æ¨¡å‹ =================
 
 Public Function BuildRoleMsg(ByVal role As String, ByVal content As String) As String
-    ' °ÑÒ»¸ö role/content ×ª³É JSON ÏûÏ¢¶ÔÏó×Ö·û´®
+    ' æŠŠä¸€ä¸ª role/content è½¬æˆ JSON æ¶ˆæ¯å¯¹è±¡å­—ç¬¦ä¸²
     BuildRoleMsg = "{""role"":""" & role & """,""content"":""" & JsonEscape(content) & """}"
 End Function
 
@@ -148,13 +148,13 @@ Public Function CallDeepSeek(ByVal messagesJson As String, _
                              ByVal enableThinking As Boolean, _
                              ByRef reply As String, _
                              ByRef reasoning As String) As Boolean
-    ' ·¢ËÍÒ»´Î¶Ô»°ÇëÇó¡£
-    ' ²ÎÊı£º
-    '   messagesJson : ĞÎÈç [{"role":..,"content":..}, ...] µÄ JSON Êı×é×Ö·û´®
-    '   enableThinking: ÊÇ·ñ¿ªÆôÉî¶ÈË¼¿¼Ä£Ê½
-    ' ·µ»Ø£º
-    '   reply     : ×îÖÕ»Ø´ğÎÄ±¾
-    '   reasoning : Ë¼Î¬Á´ÄÚÈİ£¨Ë¼¿¼Ä£Ê½¿ªÆôÊ±²ÅÓĞ£©
+    ' å‘é€ä¸€æ¬¡å¯¹è¯è¯·æ±‚ã€‚
+    ' å‚æ•°ï¼š
+    '   messagesJson : å½¢å¦‚ [{"role":..,"content":..}, ...] çš„ JSON æ•°ç»„å­—ç¬¦ä¸²
+    '   enableThinking: æ˜¯å¦å¼€å¯æ·±åº¦æ€è€ƒæ¨¡å¼
+    ' è¿”å›ï¼š
+    '   reply     : æœ€ç»ˆå›ç­”æ–‡æœ¬
+    '   reasoning : æ€ç»´é“¾å†…å®¹ï¼ˆæ€è€ƒæ¨¡å¼å¼€å¯æ—¶æ‰æœ‰ï¼‰
     Dim thinking As String
     If enableThinking Then
         thinking = """thinking"":{""type"":""enabled""}"
@@ -181,12 +181,12 @@ Public Function CallDeepSeek(ByVal messagesJson As String, _
     reply = ExtractJsonString(respText, "content")
     reasoning = ExtractJsonString(respText, "reasoning_content")
 
-    ' ÈôÁ½Õß¶¼Îª¿Õ£¬¿ÉÄÜÊÇ½Ó¿Ú·µ»ØÁË´íÎó¶ÔÏó£¬³¢ÊÔÌáÈ¡´íÎóĞÅÏ¢
+    ' è‹¥ä¸¤è€…éƒ½ä¸ºç©ºï¼Œå¯èƒ½æ˜¯æ¥å£è¿”å›äº†é”™è¯¯å¯¹è±¡ï¼Œå°è¯•æå–é”™è¯¯ä¿¡æ¯
     If reply = "" And reasoning = "" Then
         Dim apiMsg As String
         apiMsg = ExtractJsonString(respText, "message")
         If apiMsg <> "" Then
-            reply = "API ´íÎó£º" & apiMsg
+            reply = "API é”™è¯¯ï¼š" & apiMsg
             CallDeepSeek = False
             Exit Function
         End If
@@ -195,10 +195,10 @@ Public Function CallDeepSeek(ByVal messagesJson As String, _
 End Function
 
 
-'================= ÄÚ²¿£ºHTTP ÇëÇó =================
+'================= å†…éƒ¨ï¼šHTTP è¯·æ±‚ =================
 
 Private Function GetApiKey() As String
-    ' ÓÅÏÈÓÃ³£Á¿£»ÈôÎ´ÌîĞ´Ôò³¢ÊÔ´Ó %APPDATA%\deepseek_key.txt ¶ÁÈ¡Ê×ĞĞ
+    ' ä¼˜å…ˆç”¨å¸¸é‡ï¼›è‹¥æœªå¡«å†™åˆ™å°è¯•ä» %APPDATA%\deepseek_key.txt è¯»å–é¦–è¡Œ
     If DEEPSEEK_API_KEY <> "" And DEEPSEEK_API_KEY <> "sk-REPLACE_ME" Then
         GetApiKey = DEEPSEEK_API_KEY
         Exit Function
@@ -231,12 +231,12 @@ Private Function HttpPostJson(ByVal url As String, ByVal payload As String, ByRe
         If Not http Is Nothing Then Exit For
     Next i
     If http Is Nothing Then
-        responseText = "ÎŞ·¨´´½¨ HTTP ¶ÔÏó£¨ÇëÈ·ÈÏÏµÍ³Ö§³Ö MSXML/WinHttp£©¡£"
+        responseText = "æ— æ³•åˆ›å»º HTTP å¯¹è±¡ï¼ˆè¯·ç¡®è®¤ç³»ç»Ÿæ”¯æŒ MSXML/WinHttpï¼‰ã€‚"
         HttpPostJson = False
         Exit Function
     End If
 
-    ' ³¬Ê±ÉèÖÃ£¨²¿·Ö¶ÔÏó²»Ö§³Ö setTimeouts£¬ºöÂÔ´íÎó¼´¿É£©
+    ' è¶…æ—¶è®¾ç½®ï¼ˆéƒ¨åˆ†å¯¹è±¡ä¸æ”¯æŒ setTimeoutsï¼Œå¿½ç•¥é”™è¯¯å³å¯ï¼‰
     On Error Resume Next
     http.setTimeouts 30000, 30000, 60000, 120000
     On Error GoTo fail
@@ -250,19 +250,19 @@ Private Function HttpPostJson(ByVal url As String, ByVal payload As String, ByRe
         Case 200
             responseText = http.responseText
         Case 401
-            responseText = "ÈÏÖ¤Ê§°Ü£¨401£©£ºAPI Key ´íÎó»òÎ´ÌîĞ´¡£"
+            responseText = "è®¤è¯å¤±è´¥ï¼ˆ401ï¼‰ï¼šAPI Key é”™è¯¯æˆ–æœªå¡«å†™ã€‚"
             HttpPostJson = False
             Exit Function
         Case 402
-            responseText = "Óà¶î²»×ã£¨402£©£ºÇëµ½ DeepSeek Æ½Ì¨³äÖµ¡£"
+            responseText = "ä½™é¢ä¸è¶³ï¼ˆ402ï¼‰ï¼šè¯·åˆ° DeepSeek å¹³å°å……å€¼ã€‚"
             HttpPostJson = False
             Exit Function
         Case 429
-            responseText = "ÇëÇó¹ıÓÚÆµ·±£¨429£©£ºÇëÉÔºóÔÙÊÔ¡£"
+            responseText = "è¯·æ±‚è¿‡äºé¢‘ç¹ï¼ˆ429ï¼‰ï¼šè¯·ç¨åå†è¯•ã€‚"
             HttpPostJson = False
             Exit Function
         Case Else
-            responseText = "API ·µ»Ø´íÎó " & http.Status & "£º" & http.responseText
+            responseText = "API è¿”å›é”™è¯¯ " & http.Status & "ï¼š" & http.responseText
             HttpPostJson = False
             Exit Function
     End Select
@@ -270,15 +270,15 @@ Private Function HttpPostJson(ByVal url As String, ByVal payload As String, ByRe
     Exit Function
 
 fail:
-    responseText = "HTTP ÇëÇóÊ§°Ü£º" & Err.Number & " - " & Err.Description
+    responseText = "HTTP è¯·æ±‚å¤±è´¥ï¼š" & Err.Number & " - " & Err.Description
     HttpPostJson = False
 End Function
 
 
-'================= ÄÚ²¿£ºJSON ´¦Àí =================
+'================= å†…éƒ¨ï¼šJSON å¤„ç† =================
 
 Private Function JsonEscape(ByVal s As String) As String
-    ' ×ªÒå³ÉºÏ·¨µÄ JSON ×Ö·û´®ÄÚÈİ£¨²»º¬Ê×Î²ÒıºÅ£©
+    ' è½¬ä¹‰æˆåˆæ³•çš„ JSON å­—ç¬¦ä¸²å†…å®¹ï¼ˆä¸å«é¦–å°¾å¼•å·ï¼‰
     Dim i As Long, c As String, out As String
     out = ""
     For i = 1 To Len(s)
@@ -301,8 +301,8 @@ Private Function JsonEscape(ByVal s As String) As String
 End Function
 
 Private Function ExtractJsonString(ByVal json As String, ByVal key As String) As String
-    ' ÔÚ JSON ÎÄ±¾ÖĞÌáÈ¡ "key":"×Ö·û´®Öµ"£¨Ö§³Ö³£¼û×ªÒå£¬·µ»ØÎ´×ªÒåÄÚÈİ£©¡£
-    ' ÕÒ²»µ½»òÖµÎª null Ê±·µ»Ø¿Õ×Ö·û´®¡£
+    ' åœ¨ JSON æ–‡æœ¬ä¸­æå– "key":"å­—ç¬¦ä¸²å€¼"ï¼ˆæ”¯æŒå¸¸è§è½¬ä¹‰ï¼Œè¿”å›æœªè½¬ä¹‰å†…å®¹ï¼‰ã€‚
+    ' æ‰¾ä¸åˆ°æˆ–å€¼ä¸º null æ—¶è¿”å›ç©ºå­—ç¬¦ä¸²ã€‚
     Dim marker As String, pos As Long, startPos As Long
     marker = """" & key & """"
     pos = InStr(1, json, marker, vbTextCompare)
@@ -357,13 +357,13 @@ Private Function ExtractJsonString(ByVal json As String, ByVal key As String) As
 End Function
 
 
-'================= ÄÚ²¿£º½á¹¹¸¨Öú =================
+'================= å†…éƒ¨ï¼šç»“æ„è¾…åŠ© =================
 
 Private Function HeadingPrefix(p As Paragraph) As String
-    ' Îª±êÌâ¶ÎÂä¼Ó [ÑùÊ½] Ç°×º£¬ÆÕÍ¨ÕıÎÄ·µ»Ø¿Õ
+    ' ä¸ºæ ‡é¢˜æ®µè½åŠ  [æ ·å¼] å‰ç¼€ï¼Œæ™®é€šæ­£æ–‡è¿”å›ç©º
     Dim sn As String
     sn = LCase(p.Style.NameLocal)
-    If sn Like "heading*" Or sn Like "±êÌâ*" Then
+    If sn Like "heading*" Or sn Like "æ ‡é¢˜*" Then
         HeadingPrefix = "[" & p.Style.NameLocal & "] "
     Else
         HeadingPrefix = ""
@@ -371,6 +371,6 @@ Private Function HeadingPrefix(p As Paragraph) As String
 End Function
 
 Private Function CleanCellText(ByVal s As String) As String
-    ' È¥µôµ¥Ôª¸ñÎÄ±¾ÀïµÄ¶ÎÂä/µ¥Ôª¸ñ½áÊø±ê¼Ç
+    ' å»æ‰å•å…ƒæ ¼æ–‡æœ¬é‡Œçš„æ®µè½/å•å…ƒæ ¼ç»“æŸæ ‡è®°
     CleanCellText = Replace(Replace(Replace(s, Chr(7), ""), vbCr, " "), vbLf, " ")
 End Function
